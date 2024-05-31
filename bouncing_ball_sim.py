@@ -17,7 +17,7 @@ background_color = (255, 255, 255)
 
 # Physics properties
 gravity = 0.5
-elasticity = 0.95  # Marbles are very elastic
+elasticity = 0.95
 friction = 0.01
 
 # Font for displaying hit count
@@ -82,9 +82,9 @@ def handle_collisions(_balls):
             dx = ball1.position.x - ball2.position.x
             dy = ball1.position.y - ball2.position.y
             distance = math.hypot(dx, dy)
-            if distance < ball1.radius + ball2.radius:  # collision detected
-                ball1.hit_count += 1  # Increment hit_count for ball1
-                ball2.hit_count += 1  # Increment hit_count for ball2
+            if distance < ball1.radius + ball2.radius:
+                ball1.hit_count += 1
+                ball2.hit_count += 1
                 angle = math.atan2(dy, dx)
                 speed1 = math.hypot(ball1.velocity.x, ball1.velocity.y)
                 speed2 = math.hypot(ball2.velocity.x, ball2.velocity.y)
