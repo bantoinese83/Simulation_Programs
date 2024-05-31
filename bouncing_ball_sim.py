@@ -1,9 +1,8 @@
-import math
-
 import pygame
 import sys
 import random
 from pygame.math import Vector2
+import math
 
 # Initialize Pygame
 pygame.init()
@@ -21,14 +20,18 @@ gravity = 0.5
 elasticity = 0.95  # Marbles are very elastic
 friction = 0.01
 
+# Font for displaying hit count
+font = pygame.font.Font(None, 36)
+
 
 class Ball:
-    def __init__(self, x, y, radius, color, vx, vy):
+    def __init__(self, x, y, radius, color, vx, vy, hit_threshold):
         self.position = Vector2(x, y)
         self.velocity = Vector2(vx, vy)
         self.radius = radius
         self.color = color
         self.hit_count = 0
+        self.hit_threshold = hit_threshold
 
     def update(self):
         self.position += self.velocity
@@ -49,13 +52,16 @@ class Ball:
             self.velocity.y = -self.velocity.y * elasticity
         elif self.position.y + self.radius > height:
             self.position.y = height - self.radius
-            if abs(self.velocity.y) < 0.1:  # If the vertical velocity is small enough
-                self.velocity.y = 0  # Stop the vertical movement
+            if abs(self.velocity.y) < 0.1:
+                self.velocity.y = 0
             else:
                 self.velocity.y = -self.velocity.y * elasticity
 
     def draw(self, _screen):
         pygame.draw.circle(_screen, self.color, (int(self.position.x), int(self.position.y)), self.radius)
+        hit_count_text = font.render(str(self.hit_count), True, (0, 0, 0))
+        _screen.blit(hit_count_text, (
+        self.position.x - hit_count_text.get_width() // 2, self.position.y - hit_count_text.get_height() // 2))
 
 
 def create_balls(number_of_balls):
@@ -63,13 +69,14 @@ def create_balls(number_of_balls):
         Ball(random.randint(50, width - 50), random.randint(50, height - 50), random.randint(5, 15),
              # Marbles are smaller
              (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)), random.uniform(-5, 5),
-             random.uniform(-5, 5))
+             random.uniform(-5, 5), random.randint(5, 15))  # Random hit threshold between 5 and 15
         for _ in range(number_of_balls)
     ]
 
 
 def handle_collisions(_balls):
-    for i, ball1 in enumerate(_balls):
+    for i in reversed(range(len(_balls))):
+        ball1 = _balls[i]
         for j in range(i + 1, len(_balls)):
             ball2 = _balls[j]
             dx = ball1.position.x - ball2.position.x
@@ -93,11 +100,14 @@ def handle_collisions(_balls):
                     angle + math.pi / 2)
                 ball2.velocity.y = new_speed2 * math.sin(angle) + speed2 * math.sin(direction2 - angle) * math.sin(
                     angle + math.pi / 2)
+        if ball1.hit_count >= ball1.hit_threshold:
+            del _balls[i]  # Remove ball
+            _balls.append(create_balls(1)[0])  #
 
 
 def main():
     balls = create_balls(10)
-    clock = pygame.time.Clock()  # Create a clock once
+    clock = pygame.time.Clock()  #
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -111,7 +121,7 @@ def main():
         for ball in balls:
             ball.draw(screen)
         pygame.display.flip()
-        clock.tick(60)  # Use a clock to control frame rate
+        clock.tick(60)
 
 
 if __name__ == "__main__":
